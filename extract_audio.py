@@ -1,23 +1,23 @@
 import os
-import tkinter as tk
-from tkinter import filedialog
+import argparse
 from moviepy.editor import VideoFileClip
 
-def select_and_extract():
-    root = tk.Tk()
-    root.withdraw()
-    video_path = filedialog.askopenfilename(
-        title="Select Video File",
-        filetypes=[("Video files", "*.mp4 *.mov *.avi *.mkv *.webm *.flv")]
-    )
-    if not video_path:
-        print("No file selected.")
-        return
+def extract_audio(video_path: str):
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"File not found: {video_path}")
 
     output_path = os.path.splitext(video_path)[0] + ".mp3"
     with VideoFileClip(video_path) as clip:
+        if clip.audio is None:
+            raise ValueError("The provided video has no audio track")
         clip.audio.write_audiofile(output_path)
     print(f"Audio saved to {output_path}")
 
+def main():
+    parser = argparse.ArgumentParser(description="Extract audio from a video file")
+    parser.add_argument("video", help="Path to the video file")
+    args = parser.parse_args()
+    extract_audio(args.video)
+
 if __name__ == "__main__":
-    select_and_extract()
+    main()
